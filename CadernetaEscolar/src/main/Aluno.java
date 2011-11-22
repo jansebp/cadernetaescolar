@@ -23,7 +23,7 @@ public class Aluno {
 	
 	private int qtd_faltas = 0;
 	
-	// Construtor
+	// Construtor 
 	public Aluno(String matricula, Disciplina disciplina) {
 		// TODO Parseia a matrícula
 		
