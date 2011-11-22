@@ -1,4 +1,3 @@
-//Teste =P
 package main;
 
 import exceptions.CadernetaException;
