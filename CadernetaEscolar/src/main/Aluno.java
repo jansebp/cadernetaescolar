@@ -2,7 +2,7 @@ package main;
 
 import exceptions.CadernetaException;
 
-
+@SuppressWarnings("unused")
 public class Aluno {
 	public static final double NOTA_NECESSARIA_APROVACAO = 7;
 	public static final double NOTA_NECESSARIA_FINAL = 4;

@@ -1,5 +1,6 @@
 package main;
 
+@SuppressWarnings ("unused")
 public class Disciplina {
 	private int qtd_avaliacoes;
 	private int carga_horaria;
