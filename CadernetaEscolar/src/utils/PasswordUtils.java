@@ -8,7 +8,8 @@ import java.security.MessageDigest;
  * 
  * @param s em String
  * 
- * @return o Hash calculado ou null se algum problema ocorrer
+ * @return 	<code>calculatedHash</code> O Hash calculado;</br>
+ * 			<code>null</code> Se algum problema ocorrer
  */
 public class PasswordUtils {
 	public static String calculateMD5Hash (String s){

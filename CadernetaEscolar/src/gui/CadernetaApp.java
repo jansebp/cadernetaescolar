@@ -105,4 +105,11 @@ public class CadernetaApp extends JFrame {
 			}
 		});
 	}
+	
+	public static CadernetaApp showDialog(){
+	    
+		CadernetaApp caderneta = new CadernetaApp();
+		caderneta.setVisible(true);
+	return caderneta;
+	}
 }

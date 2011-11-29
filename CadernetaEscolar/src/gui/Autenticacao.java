@@ -2,6 +2,7 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -15,6 +16,7 @@ import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -33,20 +35,36 @@ import utils.PasswordUtils;
 @SuppressWarnings("serial")
 public class Autenticacao extends JDialog {
 	//Variáveis para a manipulação de arquivo.
-	static DataOutputStream output = null;
-    static DataInputStream  input  = null;
+	static DataOutputStream outputSenha = null;
+    static DataInputStream  inputSenha  = null;
+    
+    private static boolean primeiroAcesso;
 
     //Variáveis para a GUI, usadas no Construtor.
     private static	String			senhaDigitada;
-	private 		JPasswordField 	passwordField;
+	private static	JPasswordField 	passwordField;
 	private 		JLabel 			lblSenha;
 	private final 	JPanel 			jPanel = new JPanel();
 
+	/**
+	 * Construtor da classe. Cria o Frame.
+	 * 
+	 * @param parent A tela pai.
+	 */
+	public Autenticacao(JFrame parent){
+		this(parent, primeiroAcesso);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	}
 	
 	/**
 	 * Construtor da classe. Cria o Frame.
+	 * 
+	 * @param parent A tela pai.
+	 * @param primeiroAcesso <code>true</code> se for o primeiro acesso ao programa. <code>false</code> caso já tenha acessado o programa.
 	 */
-	public Autenticacao() {
+	public Autenticacao(JFrame parent, final boolean primeiroAcesso) {
+		super(parent, true);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
 		setTitle("Tela de Autenticação");
 		setResizable(false);
@@ -72,24 +90,13 @@ public class Autenticacao extends JDialog {
 		//Tratamento do Botão de OK.
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				senhaDigitada = new String (passwordField.getPassword());
-				//Autenticação do Usuário.
-				try {
-					input = new DataInputStream(new FileInputStream("senha.dat"));
-					String senha = input.readUTF();
-					if (senha.equals(PasswordUtils.calculateMD5Hash(senhaDigitada))){
-						JOptionPane.showMessageDialog(null, "Autenticado!");
-						setVisible(false);
-						input.close();
-						//Inicia o Aplicativo da Caderneta Escolar.
-						new CadernetaApp().setVisible(true);
-					} else {
-						JOptionPane.showMessageDialog(null, "A senha digitada não é a mesma registrada no servidor.\nTente novamente.");
-						passwordField.setText("");
-					}
-				} catch (IOException e1) {
-					System.err.println("Não foi possível iniciar a autenticação");
+				senhaDigitada = PasswordUtils.calculateMD5Hash(new String(passwordField.getPassword()));
+				if(primeiroAcesso) {
+					cadastraSenha();
+				} else {
+					autentica();
 				}
+				setVisible(false);
 			}
 		});//Fim do Tratamento do Botão OK.
 		
@@ -100,6 +107,8 @@ public class Autenticacao extends JDialog {
 		getContentPane().add(jPanel, BorderLayout.CENTER);
 		getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 		pack();
+		
+		this.primeiroAcesso = primeiroAcesso;
 	}
 	
 	
@@ -110,36 +119,9 @@ public class Autenticacao extends JDialog {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		//Verifica se o arquivo com a senha existe e, caso não exista, cria um e cadastra a senha.
-		try {
-			input = new DataInputStream(new FileInputStream("senha.dat"));
-		} catch (FileNotFoundException e) {
-			System.err.println(e.toString() + "\nCriando um arquivo para armazenar a senha...\n\n");
-			try {
-				output = new DataOutputStream(new FileOutputStream("senha.dat",false));
-			} catch (FileNotFoundException e2) {
-				input.close();
-				output.close();
-				System.err.println("O Arquivo não pôde ser criado, acessado ou sobrescrito!\n");
-				System.exit(1);
-			}
-			
-			String senha = JOptionPane.showInputDialog("Primeiro acesso ao programa.\nVocê deve cadastrar uma senha de usuário.");
-			try {
-				output.writeUTF(PasswordUtils.calculateMD5Hash(senha));
-				JOptionPane.showMessageDialog(null, "Senha cadastrada com sucesso!\n Digite a mesma senha para autenticar-se no servidor.");
-				output.close();
-			} catch (IOException e3) {
-				System.err.println("Erro durante o cadastro da senha.\n" + e3.toString());
-				output.writeUTF(PasswordUtils.calculateMD5Hash(senha));
-				input.close();
-				output.close();
-			}
-		}
-		
 		//Inicia a Interface Gráfica da Tela de Autenticação.
 		try {
-			Autenticacao dialog = new Autenticacao();
+			Autenticacao dialog = new Autenticacao(new JFrame(), primeiroAcesso);
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setVisible(true);
 			dialog.addWindowListener(new WindowAdapter() {
@@ -147,8 +129,84 @@ public class Autenticacao extends JDialog {
 					System.exit(0);
 				}
 			});
+			dialog.setVisible(true);
+			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	/**
+	 * Informa se é o primeiro acesso do usuário
+	 * @return O valor booleano da variável <b>primeiroAcesso</b>, indicando se é ou não o primeiro acesso do usuário ao programa.
+	 */
+	public boolean ehPrimeiroAcesso(){
+		return primeiroAcesso;
+	}
+	
+	/**
+	 * Exibe o Dialog. Se o usuário não se autenticar, a aplicação será encerrada.
+	 * 
+	 * @return Retorna a tela criada.
+	 */
+	public static Autenticacao showDialog(){
+		return showDialog(false);
+	}
+	
+	/**
+	 * Exibe o Dialog. Se o usuário não se autenticar, a aplicação será encerrada.
+	 * 
+	 * @param primeiroAcesso <code>true</code> se for o primeiro acesso ao programa.</br><code>false</code> caso contrário.
+	 * @return Retorna a tela criada.
+	 */
+	public static Autenticacao showDialog(boolean primeiroAcesso){
+	    try {
+			inputSenha  = new DataInputStream(new FileInputStream("senha.dat"));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		Autenticacao autenticacao = new Autenticacao(null, primeiroAcesso);
+		autenticacao.setVisible(true);
+	return autenticacao;
+	}
+	
+	/**
+	 * Faz o cadastro da senha do usuário, em caso de primeiro acesso ao programa.
+	 */
+	public static void cadastraSenha() {
+		try {
+			outputSenha = new DataOutputStream(new FileOutputStream("senha.dat",false));
+			outputSenha.writeUTF(senhaDigitada);
+			JOptionPane.showMessageDialog(null, "Senha cadastrada com sucesso!");
+			System.out.println("Autenticando...");
+			autentica();
+		} catch (IOException e) {
+			System.err.println("Erro durante o cadastro da senha.\n" + e.toString());
+		}
+	}
+	
+	/**
+	 * Faz a autenticação do usuário no programa.
+	 */
+	public static void autentica() { 
+			try {
+				if (inputSenha.readUTF().equals(senhaDigitada)){
+					System.out.println("Autenticado! blabla");
+					CadernetaApp caderneta = CadernetaApp.showDialog();
+					caderneta.setDefaultCloseOperation(CadernetaApp.DISPOSE_ON_CLOSE);
+				} else {
+					;
+				}
+				
+			} catch (HeadlessException e) {
+				JOptionPane.showMessageDialog(null, "Senha inválida!");
+				e.printStackTrace();
+				System.exit(0);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+	}
+	
 }
