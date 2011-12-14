@@ -11,34 +11,36 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.UIManager;
 
 /**
- * Tela do Aplicativo Caderneta Escolar
+ * Tela do Aplicativo "Caderneta Escolar"
  * 
- * @author Fernando Brito			<fernando@lavid.ufpb.br>
- * @author Jansepetrus Brasileiro	<jansepetrus@lavid.ufpb.br>
+ * @author Fernando Brito			< fernando@lavid.ufpb.br 	>
+ * @author Jansepetrus Brasileiro	< jansepetrus@lavid.ufpb.br	>
  *
  */
 @SuppressWarnings("serial")
 public class CadernetaApp extends JFrame {
-	//Variáveis para a GUI, usadas no Construtor.
-	private 	JDesktopPane	desktopPane;
-	private 	JMenuBar 		menuBar;
-	private 	JMenu			menuDisciplina;
-	private 	JMenu 			menuAlunos;
-	private 	JMenu			menuRelatorios;
-	private 	JMenuItem 		menuItemCadastroAlunos;
-	private 	JMenuItem 		menuItemCadastroDisciplina;
+	//Componentes
+	private	JDesktopPane 	desktopPane;
+	private	JMenuBar		menuBar;
+	private	JMenu			menuDisciplina;
+	private	JMenu			menuAlunos;
+	private	JMenu			menuRelatorios;
+	private JMenuItem 		menuItemCadastroAlunos;
+	private JMenuItem 		menuItemCadastroDisciplina;
 
-
+	
 	/**
 	 * Construtor da Classe. Cria o Frame.
 	 */
 	public CadernetaApp() {
-		setTitle("Caderneta escolar");
+		setAlwaysOnTop(true);
+		setTitle("Caderneta Escolar");
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
+		
 		GroupLayout layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
 		
@@ -63,9 +65,9 @@ public class CadernetaApp extends JFrame {
 		menuBar.add(menuDisciplina);
 		menuBar.add(menuAlunos);
 		menuBar.add(menuRelatorios);
-
+		
 		setJMenuBar(menuBar);
-        
+		
 		//Usar isso ou tirar o pack() =P
 		layout.setHorizontalGroup(
 			layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -81,14 +83,22 @@ public class CadernetaApp extends JFrame {
 		);
 		//
 		pack();
+		
+		setLocationRelativeTo(null);
 	}
     
+	
 	/**
 	 * Método inicial da Aplicação.
 	 * 
 	 * @param args Argumentos da Linha de Comando.
 	 */
 	public static void main(String[] args) {
+		try {
+			UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -105,11 +115,11 @@ public class CadernetaApp extends JFrame {
 			}
 		});
 	}
-	
+
 	public static CadernetaApp showDialog(){
-	    
+		
 		CadernetaApp caderneta = new CadernetaApp();
 		caderneta.setVisible(true);
-	return caderneta;
+		return caderneta;
 	}
 }

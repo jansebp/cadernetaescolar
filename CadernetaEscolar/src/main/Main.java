@@ -1,16 +1,14 @@
 package main;
 
 import gui.Autenticacao;
-import gui.CadastraDisciplina;
+import gui.CadernetaApp;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.awt.EventQueue;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-import javax.swing.JOptionPane;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * 
@@ -19,82 +17,44 @@ import javax.swing.JOptionPane;
  *
  */
 public class Main {
-	//Variáveis para a manipulação de arquivo.
-	static DataOutputStream outputSenha = null;
-    static DataInputStream  inputSenha  = null;
-    
-    //Variáveis para verificação do estado do programa.
-    private static boolean primeiroAcesso;
-    
-    
-	/**
-	 * Método Inicial da Aplicação.
-	 * 
-	 * @param args Argumentos da linha de comando
-	 * @throws IOException 
-	 */
-	public static void main(String[] args) throws IOException {
-		//Verifica se o arquivo existe e, se não existir, cria um arquivo para armazenar a senha.
-		if ( !arquivoExiste() ) {
-			criaArquivoDeSenha();
-			JOptionPane.showMessageDialog(null, "Primeiro acesso ao programa.\nVocê deve cadastrar uma senha.");
-			primeiroAcesso = true;
-		} else if ( estaVazio() ) {
-			JOptionPane.showMessageDialog(null, "Primeiro acesso ao programa.\nVocê deve cadastrar uma senha.");
-			primeiroAcesso = true;
-		} else {
-			JOptionPane.showMessageDialog(null, "Autentique-se");
-			primeiroAcesso = false;
+
+	public static void main(String[] args) {
+		//Seta a aparencia da janela.
+		try {
+			UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+		} catch (ClassNotFoundException | InstantiationException
+				| IllegalAccessException | UnsupportedLookAndFeelException e1) {
+			System.err.println(	"Ocorreu algum erro na obtenção da Skin.\n" +
+					"O programa será executado na Skin padrão.");
 		}
-		
-		Autenticacao autenticacao = Autenticacao.showDialog(primeiroAcesso);
 
-		autenticacao.setDefaultCloseOperation(Autenticacao.DISPOSE_ON_CLOSE);
-	}
+		//Faz a autenticação do usuário
+		autentica();
 
-
-	/**
-	 * Verifica se o arquivo que contém a senha existe.
-	 * 
-	 * @return <code>true</code> se o arquivo existir.<br><code>false</code> se o arquivo não existir.
-	 */
-	private static boolean arquivoExiste() {
-			try {
-				inputSenha = new DataInputStream(new FileInputStream("senha.dat"));
-			} catch (FileNotFoundException e) {
-				System.err.println("O arquivo com a senha não existe.");
-				return false;
+		//Se ocorrer tudo bem, continua a execução do programa e abre a Tela Inicial. 
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					CadernetaApp frame = new CadernetaApp();
+					frame.setVisible(true);
+					frame.addWindowListener(new WindowAdapter() {
+						public void windowClosing(WindowEvent e){
+							System.exit(0);
+						}
+					});
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
-			return true;
+		});
 	}
-	
+
+
 	/**
-	 * Cria um Arquivo para armazenar a senha, caso ele não exista.
+	 * Abre a Interface Gráfica de Autenticação
 	 */
-	private static void criaArquivoDeSenha() {
-		System.out.println("Criando um arquivo para armazenar a senha...");
-		try {
-			outputSenha = new DataOutputStream(new FileOutputStream("senha.dat",false));
-		} catch (FileNotFoundException e) {
-//			input.close();
-//			output.close();
-			System.err.println("O Arquivo não pôde ser criado, acessado ou sobrescrito!\n");
-			System.exit(1);
-		}
-	}
-	
-	/**
-	 * Verifica se o arquivo com a senha está vazio
-	 * 
-	 * @return <code>true</code> se o arquivo de estiver vazio.<br><code>false</code> se algo estiver gravado nele.
-	 */
-	private static boolean estaVazio() {
-		try {
-			inputSenha.readUTF();
-			return false;
-		} catch (IOException e) {
-			return true;
-		}
+	private static void autentica(){
+		Autenticacao autenticacao = Autenticacao.showDialog();
 	}
 
 }
